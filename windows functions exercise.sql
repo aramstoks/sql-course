@@ -49,7 +49,7 @@ GROUP BY
 SELECT
 	uk.DateRecorded
 	, uk.DailyCases
-	, 'your answer' CumulativeCases
+	, SUM(uk.DailyCases) OVER (ORDER BY uk.DateRecorded) AS CumulativeCases
 FROM
 	uk
 ORDER BY
@@ -72,10 +72,10 @@ FROM
 GROUP BY
 	cc.DateRecorded
     )
-SELECT 
+SELECT top 3
 	uk.DateRecorded
 	, uk.DailyCases
-	, 'your answer' AS Ranking
+	, sum(uk.DailyCases) over(order by uk.DailyCases desc) AS Ranking
 FROM
 	uk;
 
@@ -96,10 +96,28 @@ SELECT
 FROM
 	CovidCase cc
     )
+
 SELECT
-	*
+	Country
+	, DateRecorded
+	, DailyCases
+	, Ranking
 FROM
-	cte
+(
+    SELECT
+        Country
+        , DateRecorded
+        , DailyCases
+        , RANK() OVER (PARTITION BY Country ORDER BY DailyCases DESC) AS Ranking
+    FROM
+        cte
+) ranked
+WHERE
+	Ranking <= 3
+ORDER BY
+	Country
+	, Ranking
+	, DailyCases DESC;
 
 /*
 Advanced Section
